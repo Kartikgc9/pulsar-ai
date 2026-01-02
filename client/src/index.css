@@ -174,4 +174,99 @@
       max-width: 1280px; /* Standard content width */
     }
   }
+
+  /* iOS-inspired glassmorphism effect */
+  .glass {
+    @apply backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-lg;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-2xl bg-black/10 border border-white/10 rounded-3xl shadow-lg;
+  }
+
+  /* Soft shadow for iOS aesthetic */
+  .shadow-soft {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  .shadow-soft-lg {
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Animated gradient background */
+  .gradient-bg {
+    @apply fixed inset-0 -z-10 overflow-hidden;
+    background: linear-gradient(-45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Smooth animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-down {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.3s ease-out;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
 }
