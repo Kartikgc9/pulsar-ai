@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Search, Music, X, Check, Loader2, ArrowRight, Play, Pause, AlertCircle } from "lucide-react";
+import { Search, Music, X, Check, Loader2, ArrowRight, Play, Pause, AlertCircle, LogOut, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import VideoBackground from "@/components/VideoBackground";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Types matching Backend CatalogTrack
 interface Track {
@@ -22,6 +23,7 @@ interface Track {
 
 export default function Onboarding() {
     const [, setLocation] = useLocation();
+    const { user, token, logout, getAuthHeaders } = useAuth();
 
     // State
     const [query, setQuery] = useState("");
@@ -35,29 +37,19 @@ export default function Onboarding() {
     // Refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    // User ID Management
-    const [userId, setUserId] = useState("");
-
     useEffect(() => {
-        // Disabled for testing (per Phase 11.4):
-        // const isComplete = localStorage.getItem("pulsar_profile_complete");
-        // if (isComplete === "true") {
-        //     setLocation("/");
-        //     return;
-        // }
-
-        // Secure User ID Generation
-        let storedUser = localStorage.getItem("pulsar_user_id");
-        if (!storedUser) {
-            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-                storedUser = crypto.randomUUID();
-            } else {
-                storedUser = `user_${Math.random().toString(36).substr(2, 9)}`;
-            }
-            localStorage.setItem("pulsar_user_id", storedUser);
+        // Check if onboarding is already complete
+        const isComplete = localStorage.getItem("pulsar_profile_complete");
+        if (isComplete === "true") {
+            setLocation("/");
+            return;
         }
-        setUserId(storedUser);
     }, [setLocation]);
+
+    const handleLogout = () => {
+        logout();
+        setLocation("/login");
+    };
 
     // Audio Playback Logic (Copy from Home.tsx)
     const togglePreview = (e: React.MouseEvent, trackId: string, url?: string) => {
@@ -163,9 +155,13 @@ export default function Onboarding() {
                 artists: uniqueArtists
             };
 
-            const res = await fetch(`/api/v1/onboarding/music?user_id=${userId}`, {
+            // Use auth token for the request (user ID is extracted from token on backend)
+            const res = await fetch(`/api/v1/onboarding/music`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...getAuthHeaders(),
+                },
                 body: JSON.stringify(payload),
             });
 
@@ -209,6 +205,28 @@ export default function Onboarding() {
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Video Background */}
             <VideoBackground opacity={0.3} overlay={true} />
+
+            {/* User Header */}
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+                {user && (
+                    <>
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+                            <User className="w-4 h-4 text-white/70" />
+                            <span className="text-white/90 text-sm font-medium">
+                                {user.name || user.email.split('@')[0]}
+                            </span>
+                        </div>
+                        <Button
+                            onClick={handleLogout}
+                            variant="ghost"
+                            size="sm"
+                            className="text-white/70 hover:text-white hover:bg-white/10"
+                        >
+                            <LogOut className="w-4 h-4" />
+                        </Button>
+                    </>
+                )}
+            </div>
 
             <Card className="w-full max-w-2xl z-10 border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
                 <CardHeader className="text-center">

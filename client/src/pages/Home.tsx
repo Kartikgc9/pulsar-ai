@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Cloud, Music, Play, Loader2, RotateCcw } from "lucide-react";
+import { Cloud, Music, Play, Loader2, RotateCcw, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadImage, analyzeImage, getRecommendations, ApiError } from "@/lib/api";
 import VideoBackground from "@/components/VideoBackground";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MusicRecommendation {
   id: string;
@@ -33,6 +34,7 @@ export default function Home() {
   const audioRef = useRef<HTMLAudioElement | null>(null); // Audio Ref
 
   const [, setLocation] = useLocation();
+  const { user, logout } = useAuth();
 
   // Check onboarding status
   useEffect(() => {
@@ -41,6 +43,11 @@ export default function Home() {
       setLocation("/onboarding");
     }
   }, [setLocation]);
+
+  const handleLogout = () => {
+    logout();
+    setLocation("/login");
+  };
 
   // Audio Playback Logic
   const togglePreview = (trackId: string, url?: string) => {
@@ -152,9 +159,8 @@ export default function Home() {
       const analysisResult = await analyzeImage(uploadResult.image_id);
       console.log("Analysis complete:", analysisResult);
 
-      // Step 3: Get recommendations with personalization
-      const userId = localStorage.getItem("pulsar_user_id") || undefined;
-      const recommendationsResult = await getRecommendations(uploadResult.image_id, 5, userId);
+      // Step 3: Get recommendations (personalization is automatic via auth token)
+      const recommendationsResult = await getRecommendations(uploadResult.image_id, 5);
       console.log("Recommendations received:", recommendationsResult);
 
       // Map backend response to UI format
@@ -215,6 +221,28 @@ export default function Home() {
     <div className="min-h-screen relative overflow-hidden">
       {/* Video Background */}
       <VideoBackground opacity={0.35} overlay={true} />
+
+      {/* User Header */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+        {user && (
+          <>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+              <User className="w-4 h-4 text-white/70" />
+              <span className="text-white/90 text-sm font-medium">
+                {user.name || user.email.split('@')[0]}
+              </span>
+            </div>
+            <Button
+              onClick={handleLogout}
+              variant="ghost"
+              size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </>
+        )}
+      </div>
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">

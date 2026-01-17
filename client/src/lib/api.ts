@@ -24,6 +24,21 @@ class ApiError extends Error {
 }
 
 /**
+ * Get auth token from localStorage
+ */
+function getAuthToken(): string | null {
+    return localStorage.getItem('auth_token');
+}
+
+/**
+ * Get authorization headers
+ */
+function getAuthHeaders(): Record<string, string> {
+    const token = getAuthToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+/**
  * Fetch with timeout using AbortController
  */
 async function fetchWithTimeout(
@@ -51,7 +66,7 @@ async function fetchWithTimeout(
 }
 
 /**
- * Upload an image file to the backend
+ * Upload an image file to the backend (requires authentication)
  */
 export async function uploadImage(file: File): Promise<UploadResponse> {
     const formData = new FormData();
@@ -59,11 +74,20 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
 
     const response = await fetchWithTimeout(`${API_BASE_URL}/api/v1/upload`, {
         method: "POST",
+        headers: {
+            ...getAuthHeaders(),
+        },
         body: formData,
     });
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+
+        // Handle auth errors
+        if (response.status === 401) {
+            throw new ApiError(401, "Please log in to upload images", error);
+        }
+
         throw new ApiError(
             response.status,
             error.detail || "Failed to upload image",
@@ -75,7 +99,7 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
 }
 
 /**
- * Analyze an uploaded image
+ * Analyze an uploaded image (requires authentication)
  */
 export async function analyzeImage(imageId: string): Promise<AnalysisResponse> {
     const response = await fetchWithTimeout(
@@ -84,6 +108,7 @@ export async function analyzeImage(imageId: string): Promise<AnalysisResponse> {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                ...getAuthHeaders(),
             },
             body: JSON.stringify({ image_id: imageId }),
         },
@@ -92,6 +117,15 @@ export async function analyzeImage(imageId: string): Promise<AnalysisResponse> {
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+
+        // Handle auth errors
+        if (response.status === 401) {
+            throw new ApiError(401, "Please log in to analyze images", error);
+        }
+        if (response.status === 403) {
+            throw new ApiError(403, "You don't have permission to analyze this image", error);
+        }
+
         throw new ApiError(
             response.status,
             error.detail || "Failed to analyze image",
@@ -103,22 +137,31 @@ export async function analyzeImage(imageId: string): Promise<AnalysisResponse> {
 }
 
 /**
- * Get music recommendations for an analyzed image
+ * Get music recommendations for an analyzed image (requires authentication)
+ * User personalization is automatically applied based on the auth token
  */
 export async function getRecommendations(
     imageId: string,
-    limit: number = 10,
-    userId?: string
+    limit: number = 10
 ): Promise<RecommendationResponse> {
-    let url = `${API_BASE_URL}/api/v1/recommendations/images/${imageId}?limit=${limit}`;
-    if (userId) {
-        url += `&user_id=${encodeURIComponent(userId)}`;
-    }
+    const url = `${API_BASE_URL}/api/v1/recommendations/images/${imageId}?limit=${limit}`;
 
-    const response = await fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url, {
+        headers: {
+            ...getAuthHeaders(),
+        },
+    });
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+
+        // Handle auth errors
+        if (response.status === 401) {
+            throw new ApiError(401, "Please log in to get recommendations", error);
+        }
+        if (response.status === 403) {
+            throw new ApiError(403, "You don't have permission to access this image", error);
+        }
 
         // Special handling for missing embeddings (503)
         if (response.status === 503) {
@@ -137,6 +180,13 @@ export async function getRecommendations(
     }
 
     return response.json();
+}
+
+/**
+ * Check if user is authenticated
+ */
+export function isAuthenticated(): boolean {
+    return !!getAuthToken();
 }
 
 export { ApiError };
