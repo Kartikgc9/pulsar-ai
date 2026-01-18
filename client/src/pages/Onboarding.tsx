@@ -1,9 +1,14 @@
+/**
+ * Onboarding Page
+ * User selects 5 favorite songs to create their taste profile
+ * iOS-style glassmorphism design
+ */
+
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Search, Music, X, Check, Loader2, ArrowRight, Play, Pause, AlertCircle, LogOut, User } from "lucide-react";
+import { Search, Music, X, Check, Loader2, ArrowRight, Play, Pause, LogOut, User, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
@@ -51,9 +56,9 @@ export default function Onboarding() {
         setLocation("/login");
     };
 
-    // Audio Playback Logic (Copy from Home.tsx)
+    // Audio Playback Logic
     const togglePreview = (e: React.MouseEvent, trackId: string, url?: string) => {
-        e.stopPropagation(); // Prevent selection when clicking play
+        e.stopPropagation();
 
         if (!url) return;
 
@@ -139,7 +144,6 @@ export default function Onboarding() {
         setProgress(5);
 
         try {
-            // Simulated smooth progress
             const interval = setInterval(() => {
                 setProgress(prev => {
                     if (prev >= 90) return prev;
@@ -147,7 +151,6 @@ export default function Onboarding() {
                 });
             }, 800);
 
-            // Extract Artists explicitly
             const uniqueArtists = Array.from(new Set(selectedSongs.map(s => s.artist)));
 
             const payload = {
@@ -155,7 +158,6 @@ export default function Onboarding() {
                 artists: uniqueArtists
             };
 
-            // Use auth token for the request (user ID is extracted from token on backend)
             const res = await fetch(`/api/v1/onboarding/music`, {
                 method: "POST",
                 headers: {
@@ -169,7 +171,6 @@ export default function Onboarding() {
 
             if (!res.ok) {
                 const err = await res.json();
-                // Handle Pydantic validation errors (array)
                 const errorMessage = Array.isArray(err.detail)
                     ? err.detail.map((e: any) => `${e.loc.join('.')} ( ${e.msg} )`).join(', ')
                     : (err.detail || "Onboarding failed");
@@ -179,7 +180,6 @@ export default function Onboarding() {
 
             const data = await res.json();
 
-            // Server Confirmation Check
             if (data.profile_complete) {
                 setProgress(100);
                 localStorage.setItem("pulsar_profile_complete", "true");
@@ -202,7 +202,7 @@ export default function Onboarding() {
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center p-4">
             {/* Video Background */}
             <VideoBackground opacity={0.3} overlay={true} />
 
@@ -210,7 +210,7 @@ export default function Onboarding() {
             <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
                 {user && (
                     <>
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+                        <div className="glass-dark flex items-center gap-2 px-4 py-2 !rounded-full">
                             <User className="w-4 h-4 text-white/70" />
                             <span className="text-white/90 text-sm font-medium">
                                 {user.name || user.email.split('@')[0]}
@@ -220,7 +220,7 @@ export default function Onboarding() {
                             onClick={handleLogout}
                             variant="ghost"
                             size="sm"
-                            className="text-white/70 hover:text-white hover:bg-white/10"
+                            className="text-white/70 hover:text-white hover:bg-white/10 rounded-full"
                         >
                             <LogOut className="w-4 h-4" />
                         </Button>
@@ -228,71 +228,104 @@ export default function Onboarding() {
                 )}
             </div>
 
-            <Card className="w-full max-w-2xl z-10 border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+            {/* Main Content */}
+            <div className="w-full max-w-2xl z-10 animate-slide-up">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-8 h-8 text-white" />
+                        </div>
+                    </div>
+                    <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                         Tune Into Your Vibe
-                    </CardTitle>
-                    <CardDescription className="text-lg text-muted-foreground">
-                        Select 5 songs that define your taste ({selectedSongs.length}/5)
-                    </CardDescription>
-                </CardHeader>
+                    </h1>
+                    <p className="text-white/70 font-light">
+                        Select 5 songs that define your taste
+                    </p>
+                </div>
 
-                <CardContent className="space-y-8">
+                {/* Glass Card */}
+                <div className="glass p-6 md:p-8 space-y-6">
+                    {/* Progress Indicator */}
+                    <div className="flex justify-center gap-2 mb-2">
+                        {[1, 2, 3, 4, 5].map((num) => (
+                            <div
+                                key={num}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
+                                    selectedSongs.length >= num
+                                        ? 'bg-white text-black'
+                                        : 'bg-white/10 text-white/50 border border-white/20'
+                                }`}
+                            >
+                                {selectedSongs.length >= num ? (
+                                    <Check className="w-5 h-5" />
+                                ) : (
+                                    num
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <p className="text-center text-white/60 text-sm">
+                        {selectedSongs.length}/5 songs selected
+                    </p>
+
                     {/* Search Section */}
                     <div className="relative">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-white/70 transition-colors" />
                             <Input
-                                placeholder="Search favorite songs..."
-                                className="pl-10 h-12 text-lg bg-background/50 border-white/10 focus:border-purple-500 transition-all"
+                                placeholder="Search your favorite songs..."
+                                className="pl-12 h-14 text-base bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-2xl focus:border-white/30 focus:bg-white/10 transition-all"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 disabled={isSubmitting || selectedSongs.length >= 5}
                                 aria-label="Search music"
                             />
                             {isSearching && (
-                                <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-purple-500" />
+                                <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-white/60" />
                             )}
                         </div>
 
                         {/* Dropdown Results */}
                         {results.length > 0 && (
-                            <div className="absolute mt-2 w-full bg-popover/95 backdrop-blur-md rounded-lg border border-white/10 shadow-xl overflow-hidden z-50">
-                                <ScrollArea className="max-h-[300px]">
+                            <div className="absolute mt-2 w-full glass overflow-hidden z-50 !rounded-2xl">
+                                <ScrollArea className="max-h-[280px]">
                                     {results.map((track) => (
                                         <div
                                             key={track.track_id}
                                             className="flex items-center gap-3 p-3 hover:bg-white/10 cursor-pointer transition-colors group"
                                             onClick={() => addSong(track)}
                                         >
-                                            <div className="relative w-10 h-10 flex-shrink-0">
+                                            <div className="relative w-12 h-12 flex-shrink-0">
                                                 <img
                                                     src={track.artwork_url || "/placeholder.png"}
                                                     alt={track.title}
-                                                    className="w-full h-full rounded object-cover"
+                                                    className="w-full h-full rounded-xl object-cover"
                                                 />
-                                                {/* Preview Button */}
-                                                {track.preview_url ? (
+                                                {track.preview_url && (
                                                     <button
                                                         onClick={(e) => togglePreview(e, track.track_id, track.preview_url)}
-                                                        className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded"
+                                                        className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"
                                                         aria-label="Preview song"
                                                     >
                                                         {playingTrackId === track.track_id ? (
-                                                            <Pause className="w-4 h-4 text-white fill-current" />
+                                                            <Pause className="w-5 h-5 text-white fill-current" />
                                                         ) : (
-                                                            <Play className="w-4 h-4 text-white fill-current" />
+                                                            <Play className="w-5 h-5 text-white fill-current" />
                                                         )}
                                                     </button>
-                                                ) : null}
+                                                )}
                                             </div>
 
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-medium truncate text-foreground">{track.title}</p>
-                                                <p className="text-sm text-muted-foreground truncate">{track.artist} • {track.release_year}</p>
+                                                <p className="font-medium truncate text-white">{track.title}</p>
+                                                <p className="text-sm text-white/60 truncate">{track.artist} {track.release_year && `(${track.release_year})`}</p>
                                             </div>
-                                            <Check className={`h-4 w-4 ${selectedSongs.some(s => s.track_id === track.track_id) ? "text-green-500" : "opacity-0"}`} />
+                                            {selectedSongs.some(s => s.track_id === track.track_id) && (
+                                                <Check className="h-5 w-5 text-green-400" />
+                                            )}
                                         </div>
                                     ))}
                                 </ScrollArea>
@@ -301,59 +334,63 @@ export default function Onboarding() {
                     </div>
 
                     {/* Selected Songs Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {selectedSongs.map((song) => (
+                    <div className="relative z-0 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {selectedSongs.map((song, index) => (
                             <div
                                 key={song.track_id}
-                                className="glass group relative flex items-center gap-4 p-4 hover:bg-white/15 transition-all animate-in fade-in zoom-in-95"
+                                className="glass-dark group relative flex items-center gap-3 p-3 !rounded-2xl hover:bg-white/15 transition-all animate-in fade-in zoom-in-95"
+                                style={{ animationDelay: `${index * 50}ms` }}
                             >
                                 <img
                                     src={song.artwork_url || "/placeholder.png"}
                                     alt="art"
-                                    className="w-14 h-14 rounded-xl object-cover shadow-md"
+                                    className="w-12 h-12 rounded-xl object-cover shadow-md flex-shrink-0"
                                 />
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-sm truncate text-foreground">{song.title}</p>
-                                    <p className="text-xs text-muted-foreground truncate">{song.artist}</p>
+                                    <p className="font-medium text-sm truncate text-white">{song.title}</p>
+                                    <p className="text-xs text-white/60 truncate">{song.artist}</p>
                                 </div>
                                 <button
                                     onClick={() => removeSong(song.track_id)}
-                                    className="bg-red-500/10 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20"
+                                    className="bg-red-500/20 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/30"
                                     aria-label="Remove song"
                                 >
-                                    <X className="h-4 w-4 text-red-500" />
+                                    <X className="h-4 w-4 text-red-400" />
                                 </button>
                             </div>
                         ))}
 
                         {/* Empty slots placeholders */}
                         {Array.from({ length: Math.max(0, 5 - selectedSongs.length) }).map((_, i) => (
-                            <div key={i} className="h-[88px] rounded-3xl border border-dashed border-white/20 flex items-center justify-center">
-                                <Music className="h-6 w-6 text-muted-foreground/30" />
+                            <div
+                                key={i}
+                                className="h-[72px] rounded-2xl border border-dashed border-white/20 flex items-center justify-center gap-2"
+                            >
+                                <Music className="h-5 w-5 text-white/20" />
+                                <span className="text-white/30 text-sm">Add song</span>
                             </div>
                         ))}
                     </div>
 
                     {/* Submit Progress Section */}
                     {isSubmitting && (
-                        <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4">
-                            <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>Analyzing music taste...</span>
+                        <div className="glass-dark !rounded-2xl p-4 space-y-3 animate-in fade-in slide-in-from-bottom-4">
+                            <div className="flex justify-between text-sm text-white/70">
+                                <span>Analyzing your music taste...</span>
                                 <span>{Math.round(progress)}%</span>
                             </div>
                             <Progress value={progress} className="h-2" />
-                            <p className="text-xs text-muted-foreground text-center pt-2">
-                                Reading lyrics • Detecting emotions • Building taste vector
+                            <p className="text-xs text-white/50 text-center">
+                                Reading lyrics & Detecting emotions & Building taste vector
                             </p>
                         </div>
                     )}
 
                     {/* Action Button */}
                     <Button
-                        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-900/20"
+                        className="w-full h-14 text-lg font-semibold bg-white text-black hover:bg-white/90 rounded-2xl transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selectedSongs.length < 5 || isSubmitting}
                         onClick={handleSubmit}
-                        aria-disabled={selectedSongs.length < 5 || isSubmitting}
                     >
                         {isSubmitting ? (
                             <>
@@ -367,8 +404,8 @@ export default function Onboarding() {
                             </>
                         )}
                     </Button>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 }

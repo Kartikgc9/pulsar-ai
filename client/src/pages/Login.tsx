@@ -1,14 +1,14 @@
 /**
  * Login Page
  * Handles email/password and Google OAuth authentication
+ * iOS-style glassmorphism design
  */
 
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { Mail, Lock, User, Loader2, Music } from 'lucide-react';
+import { Mail, Lock, User, Loader2, Music, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import GoogleSignIn from '@/components/GoogleSignIn';
 import VideoBackground from '@/components/VideoBackground';
 import { useAuth } from '@/contexts/AuthContext';
@@ -70,28 +70,39 @@ export default function Login() {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
       {/* Video Background */}
-      <VideoBackground opacity={0.25} overlay={true} />
+      <VideoBackground opacity={0.3} overlay={true} />
 
-      <Card className="w-full max-w-md z-10 border-white/10 bg-black/50 backdrop-blur-xl shadow-2xl">
-        <CardHeader className="text-center pb-2">
-          {/* Logo */}
+      {/* Main Content */}
+      <div className="w-full max-w-md z-10 animate-slide-up">
+        {/* Logo & Header */}
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-              <Music className="w-6 h-6 text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-lg">
+              <Music className="w-8 h-8 text-white" />
             </div>
           </div>
+          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+            PULSAR AI
+          </h1>
+          <p className="text-white/70 font-light">
+            Music that feels your moment
+          </p>
+        </div>
 
-          <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500">
-            {isSignup ? 'Create Account' : 'Welcome Back'}
-          </CardTitle>
-          <CardDescription className="text-white/60 mt-2">
-            {isSignup
-              ? 'Sign up to discover music that matches your moments'
-              : 'Sign in to continue your musical journey'}
-          </CardDescription>
-        </CardHeader>
+        {/* Glass Card */}
+        <div className="glass p-8 space-y-6">
+          {/* Title */}
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-white mb-1">
+              {isSignup ? 'Create Account' : 'Welcome Back'}
+            </h2>
+            <p className="text-white/60 text-sm">
+              {isSignup
+                ? 'Sign up to discover personalized music'
+                : 'Sign in to continue your journey'}
+            </p>
+          </div>
 
-        <CardContent className="space-y-6 pt-4">
           {/* Google Sign-In */}
           <GoogleSignIn
             onSuccess={handleGoogleSuccess}
@@ -105,7 +116,7 @@ export default function Login() {
               <span className="w-full border-t border-white/20" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-black/50 backdrop-blur px-3 text-white/50">
+              <span className="bg-transparent backdrop-blur-sm px-3 text-white/50">
                 Or continue with email
               </span>
             </div>
@@ -114,31 +125,31 @@ export default function Login() {
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignup && (
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-5 w-5 text-white/40" />
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-white/70 transition-colors" />
                 <Input
                   placeholder="Full Name (optional)"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500 focus:ring-purple-500/20"
+                  className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-2xl focus:border-white/30 focus:bg-white/10 transition-all"
                 />
               </div>
             )}
 
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-5 w-5 text-white/40" />
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-white/70 transition-colors" />
               <Input
                 type="email"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500 focus:ring-purple-500/20"
+                className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-2xl focus:border-white/30 focus:bg-white/10 transition-all"
               />
             </div>
 
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-5 w-5 text-white/40" />
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-white/70 transition-colors" />
               <Input
                 type="password"
                 placeholder="Password (min 8 characters)"
@@ -146,13 +157,13 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500 focus:ring-purple-500/20"
+                className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-2xl focus:border-white/30 focus:bg-white/10 transition-all"
               />
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm">
                 <p className="text-red-400 text-sm text-center">{error}</p>
               </div>
             )}
@@ -161,7 +172,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-900/30 transition-all duration-300"
+              className="w-full h-14 text-lg font-semibold bg-white text-black hover:bg-white/90 rounded-2xl transition-all duration-300 shadow-lg"
             >
               {loading ? (
                 <>
@@ -169,7 +180,10 @@ export default function Login() {
                   {isSignup ? 'Creating Account...' : 'Signing In...'}
                 </>
               ) : (
-                <>{isSignup ? 'Create Account' : 'Sign In'}</>
+                <>
+                  {isSignup ? 'Create Account' : 'Sign In'}
+                  <Sparkles className="ml-2 h-5 w-5" />
+                </>
               )}
             </Button>
           </form>
@@ -183,13 +197,18 @@ export default function Login() {
                 setIsSignup(!isSignup);
                 setError('');
               }}
-              className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              className="text-white hover:text-white/80 font-medium transition-colors underline underline-offset-4"
             >
               {isSignup ? 'Sign In' : 'Sign Up'}
             </button>
           </p>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-white/30 text-xs mt-6">
+          By continuing, you agree to our Terms of Service
+        </p>
+      </div>
     </div>
   );
 }

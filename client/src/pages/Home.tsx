@@ -1,6 +1,12 @@
+/**
+ * Home Page
+ * Upload images and get personalized music recommendations
+ * iOS-style glassmorphism design
+ */
+
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Cloud, Music, Play, Loader2, RotateCcw, LogOut, User } from "lucide-react";
+import { Cloud, Music, Play, Pause, Loader2, RotateCcw, LogOut, User, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadImage, analyzeImage, getRecommendations, ApiError } from "@/lib/api";
 import VideoBackground from "@/components/VideoBackground";
@@ -11,7 +17,7 @@ interface MusicRecommendation {
   title: string;
   artist: string;
   albumArt: string;
-  previewUrl?: string; // Added
+  previewUrl?: string;
   lyric: string;
   confidence: number;
   scoreBreakdown?: {
@@ -27,11 +33,11 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<MusicRecommendation[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null); // Track Playing State
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragOverRef = useRef(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null); // Audio Ref
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [, setLocation] = useLocation();
   const { user, logout } = useAuth();
@@ -54,16 +60,14 @@ export default function Home() {
     if (!url) return;
 
     if (playingTrackId === trackId) {
-      // Pause
       audioRef.current?.pause();
       setPlayingTrackId(null);
     } else {
-      // Play New
       if (audioRef.current) {
         audioRef.current.pause();
       }
       const audio = new Audio(url);
-      audio.volume = 0.5; // 50% volume
+      audio.volume = 0.5;
       audio.onended = () => setPlayingTrackId(null);
       audio.onerror = () => {
         console.error("Failed to load audio preview");
@@ -85,7 +89,7 @@ export default function Home() {
     };
   }, []);
 
-  // Explanation Helper (Phase 11.1)
+  // Explanation Helper
   const getExplanation = (rec: MusicRecommendation) => {
     if (!rec.scoreBreakdown) return "Recommended for you";
 
@@ -151,20 +155,15 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      // Step 1: Upload the file
       const uploadResult = await uploadImage(uploadedFile);
       console.log("Upload successful:", uploadResult);
 
-      // Step 2: Analyze the image
       const analysisResult = await analyzeImage(uploadResult.image_id);
       console.log("Analysis complete:", analysisResult);
 
-      // Step 3: Get recommendations (personalization is automatic via auth token)
       const recommendationsResult = await getRecommendations(uploadResult.image_id, 5);
       console.log("Recommendations received:", recommendationsResult);
 
-      // Map backend response to UI format
-      // Re-map strictly:
       const strictMapped: MusicRecommendation[] = recommendationsResult.results.map((track: any) => ({
         id: track.track_id,
         title: track.title,
@@ -181,7 +180,6 @@ export default function Home() {
     } catch (error) {
       console.error("Error during analysis:", error);
 
-      // Show user-friendly error message
       let errorMessage = "An error occurred while analyzing your image.";
 
       if (error instanceof ApiError) {
@@ -210,7 +208,6 @@ export default function Home() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    // Stop audio
     if (audioRef.current) {
       audioRef.current.pause();
       setPlayingTrackId(null);
@@ -226,7 +223,7 @@ export default function Home() {
       <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
         {user && (
           <>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+            <div className="glass-dark flex items-center gap-2 px-4 py-2 !rounded-full">
               <User className="w-4 h-4 text-white/70" />
               <span className="text-white/90 text-sm font-medium">
                 {user.name || user.email.split('@')[0]}
@@ -236,7 +233,7 @@ export default function Home() {
               onClick={handleLogout}
               variant="ghost"
               size="sm"
-              className="text-white/70 hover:text-white hover:bg-white/10"
+              className="text-white/70 hover:text-white hover:bg-white/10 rounded-full"
             >
               <LogOut className="w-4 h-4" />
             </Button>
@@ -248,15 +245,17 @@ export default function Home() {
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
         {/* Header Section */}
         {!showResults && (
-          <div className="text-center mb-12 animate-fade-in">
+          <div className="text-center mb-10 animate-fade-in">
             <div className="flex items-center justify-center mb-4">
-              <Music className="w-10 h-10 text-white" />
+              <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-lg">
+                <Music className="w-8 h-8 text-white" />
+              </div>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
               PULSAR AI
             </h1>
-            <p className="text-lg md:text-xl text-white/80 font-light">
-              Music that feels your moment.
+            <p className="text-lg md:text-xl text-white/70 font-light">
+              Music that feels your moment
             </p>
           </div>
         )}
@@ -281,18 +280,20 @@ export default function Home() {
                   className="hidden"
                 />
 
-                <div className="flex justify-center mb-4">
-                  <Cloud className="w-12 h-12 text-white/70 group-hover:text-white transition-colors" />
+                <div className="flex justify-center mb-6">
+                  <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <Upload className="w-10 h-10 text-white/70 group-hover:text-white transition-colors" />
+                  </div>
                 </div>
 
                 <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">
                   Upload Your Moment
                 </h2>
-                <p className="text-white/70 mb-4 text-sm md:text-base">
+                <p className="text-white/60 mb-4 text-sm md:text-base">
                   Drag and drop your photo or video here
                 </p>
-                <p className="text-white/50 text-xs md:text-sm">
-                  JPG, PNG, or MP4 • Max 10MB
+                <p className="text-white/40 text-xs md:text-sm">
+                  JPG, PNG, or MP4 - Max 10MB
                 </p>
               </div>
             ) : (
@@ -315,8 +316,8 @@ export default function Home() {
                 </div>
 
                 {/* File Info */}
-                <div className="mb-6">
-                  <p className="text-white/70 text-sm mb-1">File selected</p>
+                <div className="mb-6 glass-dark !rounded-2xl p-4">
+                  <p className="text-white/50 text-xs mb-1">File selected</p>
                   <p className="text-white font-medium truncate">
                     {uploadedFile?.name}
                   </p>
@@ -327,21 +328,24 @@ export default function Home() {
                   <Button
                     onClick={handleAnalyze}
                     disabled={isLoading}
-                    className="flex-1 bg-white text-black hover:bg-white/90 font-semibold py-2 rounded-xl transition-all duration-300"
+                    className="flex-1 h-14 bg-white text-black hover:bg-white/90 font-semibold rounded-2xl transition-all duration-300 shadow-lg"
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         Analyzing...
                       </>
                     ) : (
-                      <>Analyze</>
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Analyze
+                      </>
                     )}
                   </Button>
                   <Button
                     onClick={() => setPreviewUrl(null)}
                     variant="outline"
-                    className="flex-1 border-white/30 text-white hover:bg-white/10 font-semibold py-2 rounded-xl"
+                    className="flex-1 h-14 border-white/20 bg-white/5 text-white hover:bg-white/10 font-semibold rounded-2xl"
                   >
                     Change
                   </Button>
@@ -356,10 +360,15 @@ export default function Home() {
           <div className="w-full max-w-4xl animate-slide-up">
             {/* Results Header */}
             <div className="text-center mb-8">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-white" />
+                </div>
+              </div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                Your Music Recommendations
+                Your Music
               </h2>
-              <p className="text-white/70 font-light">
+              <p className="text-white/60 font-light">
                 Based on your uploaded moment
               </p>
             </div>
@@ -369,13 +378,13 @@ export default function Home() {
               {recommendations.map((rec, index) => (
                 <div
                   key={rec.id}
-                  className="glass p-6 hover:bg-white/15 transition-all duration-300 group relative"
+                  className="glass p-5 hover:bg-white/15 transition-all duration-300 group"
                   style={{
                     animation: `slide-up 0.5s ease-out ${index * 0.1}s both`,
                   }}
                 >
                   {/* Album Art with Play Overlay */}
-                  <div className="mb-4 rounded-xl overflow-hidden relative aspect-video bg-black/20">
+                  <div className="mb-4 rounded-2xl overflow-hidden relative aspect-video bg-black/20">
                     <img
                       src={rec.albumArt}
                       alt={rec.title}
@@ -392,11 +401,11 @@ export default function Home() {
                         className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors duration-300 cursor-pointer"
                       >
                         {playingTrackId === rec.id ? (
-                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/50">
-                            <div className="w-4 h-4 bg-white rounded-sm" /> {/* Pause Icon */}
+                          <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/50">
+                            <Pause className="w-6 h-6 text-white fill-current" />
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-90 group-hover:scale-100">
+                          <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-90 group-hover:scale-100">
                             <Play className="w-6 h-6 text-white fill-current translate-x-0.5" />
                           </div>
                         )}
@@ -406,41 +415,42 @@ export default function Home() {
 
                   {/* Song Info */}
                   <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-lg font-semibold text-white leading-tight">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-semibold text-white leading-tight truncate">
                         {rec.title}
                       </h3>
-                      <p className="text-white/70 text-sm">{rec.artist}</p>
+                      <p className="text-white/60 text-sm">{rec.artist}</p>
 
                       {/* Explanation Text */}
-                      <p className="text-xs text-white/60 mt-1 font-medium flex items-center gap-1">
-                        ✨ {getExplanation(rec)}
+                      <p className="text-xs text-white/50 mt-1 font-medium flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        {getExplanation(rec)}
                       </p>
                     </div>
 
                     {playingTrackId === rec.id && (
-                      <div className="flex space-x-1 items-end h-4 mt-1">
-                        <div className="w-1 bg-blue-400 animate-music-bar-1 h-2"></div>
-                        <div className="w-1 bg-purple-400 animate-music-bar-2 h-4"></div>
-                        <div className="w-1 bg-pink-400 animate-music-bar-3 h-3"></div>
+                      <div className="flex space-x-1 items-end h-4 mt-1 ml-2">
+                        <div className="w-1 bg-blue-400 animate-music-bar-1 h-2 rounded-full"></div>
+                        <div className="w-1 bg-purple-400 animate-music-bar-2 h-4 rounded-full"></div>
+                        <div className="w-1 bg-pink-400 animate-music-bar-3 h-3 rounded-full"></div>
                       </div>
                     )}
                   </div>
 
                   {/* Lyric */}
-                  <p className="text-white/80 italic text-sm mb-4 leading-relaxed line-clamp-2 mt-2">
+                  <p className="text-white/70 italic text-sm mb-4 leading-relaxed line-clamp-2 mt-3">
                     "{rec.lyric}"
                   </p>
 
                   {/* Confidence Bar */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
+                        className="h-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full transition-all duration-500"
                         style={{ width: `${rec.confidence * 100}%` }}
                       />
                     </div>
-                    <span className="text-white/60 text-xs font-medium">
+                    <span className="text-white/50 text-xs font-medium min-w-[40px] text-right">
                       {Math.round(rec.confidence * 100)}%
                     </span>
                   </div>
@@ -452,22 +462,27 @@ export default function Home() {
             <div className="flex justify-center">
               <Button
                 onClick={handleReset}
-                className="bg-white text-black hover:bg-white/90 font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2"
+                className="h-14 bg-white text-black hover:bg-white/90 font-semibold px-8 rounded-2xl transition-all duration-300 shadow-lg flex items-center gap-2"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-5 h-5" />
                 Upload Another Moment
               </Button>
             </div>
           </div>
         )}
 
-        {/* Loading State */}
+        {/* Loading Overlay */}
         {isLoading && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="glass p-8 text-center animate-fade-in">
-              <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
-              <p className="text-white font-light text-lg">
-                Finding music that matches your moment...
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-sm">
+            <div className="glass p-8 text-center animate-fade-in max-w-sm mx-4">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/10 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+              </div>
+              <p className="text-white font-medium text-lg mb-2">
+                Finding your music...
+              </p>
+              <p className="text-white/60 text-sm">
+                Analyzing mood, colors, and emotions
               </p>
             </div>
           </div>
