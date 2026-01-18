@@ -27,13 +27,14 @@
 - [x] Add "Upload another image" reset functionality
 
 ### Phase 4: Design & UX Refinement
-- [ ] Ensure responsive design for mobile and desktop
-- [ ] Test iOS-style typography hierarchy
-- [ ] Verify generous white space and minimal layout
-- [ ] Add error state messaging
-- [ ] Optimize animations for performance
-- [ ] Test drag-and-drop on mobile devices
-- [ ] Verify color palette consistency (neutral + soft gradients)
+- [x] Ensure responsive design for mobile and desktop
+- [x] Test iOS-style typography hierarchy
+- [x] Verify generous white space and minimal layout
+- [x] Add error state messaging (toast notifications)
+- [x] Optimize animations for performance
+- [x] Test drag-and-drop on mobile devices
+- [x] Verify color palette consistency (neutral + soft gradients)
+- [x] Add VideoBackground to all pages (including NotFound)
 
 ### Phase 5: Deployment
 - [ ] Final testing and bug fixes

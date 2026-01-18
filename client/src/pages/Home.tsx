@@ -6,11 +6,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Cloud, Music, Play, Pause, Loader2, RotateCcw, LogOut, User, Upload, Sparkles } from "lucide-react";
+import { Cloud, Music, Play, Pause, Loader2, RotateCcw, LogOut, User, Upload, Sparkles, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadImage, analyzeImage, getRecommendations, ApiError } from "@/lib/api";
 import VideoBackground from "@/components/VideoBackground";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 interface MusicRecommendation {
   id: string;
@@ -107,7 +109,10 @@ export default function Home() {
   const handleFileSelect = (file: File) => {
     const validTypes = ["image/jpeg", "image/png", "video/mp4"];
     if (!validTypes.includes(file.type)) {
-      alert("Please upload a JPG, PNG image or MP4 video");
+      toast.error("Invalid file type", {
+        description: "Please upload a JPG, PNG image or MP4 video",
+        duration: 5000
+      });
       return;
     }
 
@@ -194,7 +199,10 @@ export default function Home() {
         }
       }
 
-      alert(errorMessage);
+      toast.error("Analysis Failed", {
+        description: errorMessage,
+        duration: 5000
+      });
     } finally {
       setIsLoading(false);
     }
@@ -296,7 +304,22 @@ export default function Home() {
                   JPG, PNG, or MP4 - Max 10MB
                 </p>
               </div>
-            ) : (
+            ) : null}
+
+            {/* WhatsApp Alternative */}
+            {!previewUrl && (
+              <div className="mt-6 text-center">
+                <p className="text-white/50 text-sm mb-3">Or try via WhatsApp</p>
+                <WhatsAppButton
+                  phoneNumber={import.meta.env.VITE_WHATSAPP_NUMBER || ""}
+                  message="pulsar"
+                  className="mx-auto !rounded-2xl"
+                />
+              </div>
+            )}
+
+            {/* Preview Section */}
+            {previewUrl ? (
               <div className="glass p-6 md:p-8">
                 {/* Preview */}
                 <div className="mb-6 rounded-2xl overflow-hidden">
@@ -351,7 +374,7 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         ) : null}
 
