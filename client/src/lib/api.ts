@@ -183,6 +183,37 @@ export async function getRecommendations(
 }
 
 /**
+ * Feedback request interface
+ */
+export interface FeedbackRequest {
+    user_id: string;
+    image_id: string;
+    recommendation_id: string;
+    feedback_type: 'like' | 'dislike' | 'skip' | 'share' | 'favorite';
+}
+
+/**
+ * Submit user feedback for a recommendation
+ */
+export async function submitFeedback(feedback: FeedbackRequest): Promise<{ status: string; message: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/v1/feedback`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify(feedback),
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new ApiError(response.status, error.detail || "Failed to submit feedback", error);
+    }
+
+    return response.json();
+}
+
+/**
  * Check if user is authenticated
  */
 export function isAuthenticated(): boolean {

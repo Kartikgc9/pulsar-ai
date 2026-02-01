@@ -5,9 +5,11 @@ import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
+import LinkTelegram from "./pages/LinkTelegram";
 
 /**
  * Protected Route wrapper - redirects to login if not authenticated
@@ -34,13 +36,22 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 function Router() {
   return (
     <Switch>
+      {/* Public routes */}
+      <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
+
+      {/* Protected routes */}
       <Route path="/onboarding">
         <ProtectedRoute component={Onboarding} />
       </Route>
-      <Route path="/">
+      <Route path="/app">
         <ProtectedRoute component={Home} />
       </Route>
+      <Route path="/profile/link-telegram">
+        <ProtectedRoute component={LinkTelegram} />
+      </Route>
+
+      {/* Error routes */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

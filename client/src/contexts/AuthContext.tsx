@@ -25,7 +25,7 @@ interface AuthContextType {
   loading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name?: string) => Promise<void>;
+  signup: (email: string, password: string, name?: string, phone?: string) => Promise<void>;
   googleLogin: (googleToken: string) => Promise<void>;
   logout: () => void;
   getAuthHeaders: () => Record<string, string>;
@@ -87,11 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchUser(data.access_token);
   };
 
-  const signup = async (email: string, password: string, name?: string) => {
+  const signup = async (email: string, password: string, name?: string, phone?: string) => {
     const res = await fetch(`${API_BASE}/api/v1/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name })
+      body: JSON.stringify({ email, password, name, phone_number: phone || undefined })
     });
 
     if (!res.ok) {

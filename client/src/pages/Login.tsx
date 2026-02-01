@@ -1,17 +1,18 @@
 /**
  * Login Page
  * Handles email/password and Google OAuth authentication
- * iOS-style glassmorphism design
+ * Apple iOS style - white glass cards, black text
  */
 
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { Mail, Lock, User, Loader2, Music, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, Loader2, Music, Sparkles, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GoogleSignIn from '@/components/GoogleSignIn';
-import VideoBackground from '@/components/VideoBackground';
+import BokehBackground from '@/components/BokehBackground';
 import { useAuth } from '@/contexts/AuthContext';
+import { MouseTrail } from '@/components/framer';
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -21,12 +22,13 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    setLocation('/onboarding');
+    setLocation('/app');
     return null;
   }
 
@@ -37,12 +39,12 @@ export default function Login() {
 
     try {
       if (isSignup) {
-        await signup(email, password, name || undefined);
+        await signup(email, password, name || undefined, phone || undefined);
       } else {
         await login(email, password);
       }
-      // Redirect to onboarding after successful auth
-      setLocation('/onboarding');
+      // Redirect to app after successful auth
+      setLocation('/app');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     } finally {
@@ -55,7 +57,7 @@ export default function Login() {
     setLoading(true);
     try {
       await googleLogin(token);
-      setLocation('/onboarding');
+      setLocation('/app');
     } catch (err: any) {
       setError(err.message || 'Google login failed');
     } finally {
@@ -69,34 +71,34 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-      {/* Video Background */}
-      <VideoBackground opacity={0.3} overlay={true} />
+      {/* Bokeh Background */}
+      <BokehBackground />
 
       {/* Main Content */}
       <div className="w-full max-w-md z-10 animate-slide-up">
         {/* Logo & Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-lg flex items-center justify-center shadow-lg animate-glow-pulse">
               <Music className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+          <h1 className="text-4xl text-wing-display text-white mb-2">
             PULSAR AI
           </h1>
-          <p className="text-white/70 font-light">
+          <p className="text-white/80 text-wing-body">
             Music that feels your moment
           </p>
         </div>
 
         {/* Glass Card */}
-        <div className="glass p-8 space-y-6">
+        <div className="glass-strong p-8 space-y-6">
           {/* Title */}
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-white mb-1">
+            <h2 className="text-2xl text-wing-heading text-white mb-1">
               {isSignup ? 'Create Account' : 'Welcome Back'}
             </h2>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/80 text-sm">
               {isSignup
                 ? 'Sign up to discover personalized music'
                 : 'Sign in to continue your journey'}
@@ -116,7 +118,7 @@ export default function Login() {
               <span className="w-full border-t border-white/20" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-transparent backdrop-blur-sm px-3 text-white/50">
+              <span className="bg-white/10 backdrop-blur-sm px-3 text-white/70">
                 Or continue with email
               </span>
             </div>
@@ -125,31 +127,46 @@ export default function Login() {
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignup && (
-              <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-white/70 transition-colors" />
-                <Input
-                  placeholder="Full Name (optional)"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-2xl focus:border-white/30 focus:bg-white/10 transition-all"
-                />
-              </div>
+              <>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
+                  <Input
+                    placeholder="Full Name (optional)"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-12 h-14 bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-2xl focus:border-black focus:bg-white transition-all"
+                  />
+                </div>
+                <div className="relative group">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
+                  <Input
+                    type="tel"
+                    placeholder="Phone number for Telegram (optional)"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="pl-12 h-14 bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-2xl focus:border-black focus:bg-white transition-all"
+                  />
+                  <p className="text-white/70 text-xs mt-1 ml-1">
+                    Add your phone to link Telegram later
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-white/70 transition-colors" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
               <Input
                 type="email"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-2xl focus:border-white/30 focus:bg-white/10 transition-all"
+                className="pl-12 h-14 bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-2xl focus:border-black focus:bg-white transition-all"
               />
             </div>
 
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40 group-focus-within:text-white/70 transition-colors" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 group-focus-within:text-white transition-colors" />
               <Input
                 type="password"
                 placeholder="Password (min 8 characters)"
@@ -157,14 +174,14 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-white/40 rounded-2xl focus:border-white/30 focus:bg-white/10 transition-all"
+                className="pl-12 h-14 bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-2xl focus:border-black focus:bg-white transition-all"
               />
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm">
-                <p className="text-red-400 text-sm text-center">{error}</p>
+              <div className="p-4 rounded-2xl bg-red-50 border border-red-200">
+                <p className="text-red-600 text-sm text-center">{error}</p>
               </div>
             )}
 
@@ -172,7 +189,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-14 text-lg font-semibold bg-white text-black hover:bg-white/90 rounded-2xl transition-all duration-300 shadow-lg"
+              className="w-full h-14 text-lg btn-wing-accent !rounded-full"
             >
               {loading ? (
                 <>
@@ -189,7 +206,7 @@ export default function Login() {
           </form>
 
           {/* Toggle Sign Up / Sign In */}
-          <p className="text-center text-white/50 text-sm">
+          <p className="text-center text-white/80 text-sm">
             {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
             <button
               type="button"
@@ -197,7 +214,7 @@ export default function Login() {
                 setIsSignup(!isSignup);
                 setError('');
               }}
-              className="text-white hover:text-white/80 font-medium transition-colors underline underline-offset-4"
+              className="text-white hover:text-gray-700 font-medium transition-colors"
             >
               {isSignup ? 'Sign In' : 'Sign Up'}
             </button>
@@ -205,10 +222,22 @@ export default function Login() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-white/30 text-xs mt-6">
+        <p className="text-center text-white/70 text-xs mt-6">
           By continuing, you agree to our Terms of Service
         </p>
       </div>
+
+      {/* Mouse Trail Effect */}
+      <MouseTrail
+        variant="dots"
+        trailColor="#000000"
+        trailLength={12}
+        dotSize={5}
+        dotSpacing={15}
+        fadeOut={true}
+        autoFade={true}
+        fadeDuration={1.5}
+      />
     </div>
   );
 }
